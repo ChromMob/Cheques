@@ -2,3 +2,4 @@ name: Cheques
 version: '${project.version}'
 main: me.chrommob.cheques.Cheques
 api-version: 1.19
+depend: [Vault]

@@ -16,12 +16,17 @@ public class EventListener implements Listener {
         if (event.getItem().getType() != Material.PAPER) {
             return;
         }
-        if (!Cheques.getInstance().getChequesManager().isChequeValid(event.getItem())) {
+        if (Cheques.getInstance().getChequesManager().isQueueInvalid(event.getItem())) {
             String chequeClaimer = Cheques.getInstance().getChequesManager().getChequeClaimer(event.getItem());
             if (chequeClaimer != null) {
                 event.getPlayer().sendMessage(ChatColor.BOLD + "" + ChatColor.RED + "Tento šek již byl vyměněn za peníze!");
                 event.getPlayer().sendMessage(ChatColor.BOLD + "" + ChatColor.RED + "Byl vyplacen hráči: " + ChatColor.RESET + chequeClaimer);
             }
+            return;
+        }
+        if (!Cheques.getInstance().getChequesManager().isEconomyLoaded()) {
+            event.getPlayer().sendMessage(ChatColor.BOLD + "" + ChatColor.RED + "Nelze vyměnit šek za peníze!");
+            event.getPlayer().sendMessage(ChatColor.BOLD + "" + ChatColor.RED + "Nelze se připojit k bankovnímu systému!");
             return;
         }
         event.setCancelled(true);

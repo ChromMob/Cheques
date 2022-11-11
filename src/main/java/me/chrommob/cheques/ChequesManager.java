@@ -2,6 +2,7 @@ package me.chrommob.cheques;
 
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -12,13 +13,32 @@ import java.util.List;
 import java.util.UUID;
 
 public class ChequesManager {
-    private final Economy economy;
+    private Economy economy = null;
     private final DatabaseManager databaseManager = new DatabaseManager();
 
     public ChequesManager() {
-        this.economy = Cheques.getInstance().getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+        if (Cheques.getInstance().getServer().getServicesManager().getRegistration(Economy.class) == null) {
+            setupEconomy();
+        } else {
+            Bukkit.getLogger().info("Vault found!");
+            this.economy = Cheques.getInstance().getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+        }
     }
 
+    private void setupEconomy() {
+        Bukkit.getScheduler().runTaskLater(Cheques.getInstance(), () -> {
+            if (Cheques.getInstance().getServer().getServicesManager().getRegistration(Economy.class) == null) {
+                setupEconomy();
+            } else {
+                Bukkit.getLogger().info("Vault found!");
+                this.economy = Cheques.getInstance().getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+            }
+        }, 20L);
+    }
+
+    public boolean isEconomyLoaded() {
+        return economy != null;
+    }
 
     public ItemStack getChequeItem(double amount) {
         ItemStack cheque = new ItemStack(Material.PAPER);
@@ -37,13 +57,13 @@ public class ChequesManager {
         return nbtItem.getItem();
     }
 
-    public boolean isChequeValid(ItemStack cheque) {
+    public boolean isQueueInvalid(ItemStack cheque) {
         NBTItem nbtItem = new NBTItem(cheque);
-        if (!nbtItem.hasCustomNbtData()) return false;
-        if (!nbtItem.hasKey("cheque")) return false;
-        if (!nbtItem.hasKey("cheque.id")) return false;
-        if (!nbtItem.hasKey("cheque.amount")) return false;
-        return databaseManager.isChequeValid(nbtItem.getString("cheque.id"), nbtItem.getDouble("cheque.amount"));
+        if (!nbtItem.hasCustomNbtData()) return true;
+        if (!nbtItem.hasKey("cheque")) return true;
+        if (!nbtItem.hasKey("cheque.id")) return true;
+        if (!nbtItem.hasKey("cheque.amount")) return true;
+        return !databaseManager.isChequeValid(nbtItem.getString("cheque.id"), nbtItem.getDouble("cheque.amount"));
     }
 
     public void addMoney(Player player, double amount, String uuid) {

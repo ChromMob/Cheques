@@ -42,7 +42,7 @@ public class Commands extends BaseCommand {
             player.sendMessage("V ruce nemáš papír.");
             return;
         }
-        if (!Cheques.getInstance().getChequesManager().isChequeValid(toVerify)) {
+        if (Cheques.getInstance().getChequesManager().isQueueInvalid(toVerify)) {
             player.sendMessage("Tento šek není platný.");
             player.sendMessage("Byl už vybrán hráčem: " + Cheques.getInstance().getChequesManager().getChequeClaimer(toVerify));
             return;
